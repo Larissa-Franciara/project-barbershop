@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// USUÁRIO VAI TER VARIOS AGENDAMENTOS
+model User {
+  id      String    @id @default(uuid())
+  name    String?
+  Booking Booking[]
+    // email String @unique
+  // password String
+  // posts Post[]
+
+}
+
+//BARBEARIA VAI TER VARIOS SERVIÇOS E VARIOS AGENDAMENTOS
+model Barbershop {
+  id       String    @id @default(uuid())
+  name     String
+  address  String
+  imageUrl String
+  Service  Service[]
+  Booking  Booking[]
+}
+
+//UM SERVICO VAI PERTENCER A UMA BARBEARIA
+model Service {
+  id           String     @id @default(uuid())
+  name         String
+  price        Decimal    @db.Decimal(10, 2)
+  barbershopId String
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id])
+  imageUrl     String
+  description  String
+  Booking      Booking[]
+}
+
+// VAI PERTENCER A UM USER, UM SERVICO E UMA BARBEARIA
+model Booking {
+  id           String     @id @default(uuid())
+  barbershopId String
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id])
+  serviceId    String
+  service      Service    @relation(fields: [serviceId], references: [id])
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  date         DateTime   @db.Timestamp
+}
