@@ -20,7 +20,7 @@ const BarbershoInfo = ({ barbershop }: BarbershopInfoProps) => {
   const router = useRouter();
 
   const handleBoonkingClick = () => {
-    router.back();
+    router.replace("/");
   };
   return (
     <div>
