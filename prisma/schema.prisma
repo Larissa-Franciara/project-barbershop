@@ -14,7 +14,7 @@ datasource db {
 model User {
   id      String    @id @default(uuid())
   name    String?
-  Booking Booking[]
+  bookings Booking[]
     // email String @unique
   // password String
   // posts Post[]
@@ -27,8 +27,8 @@ model Barbershop {
   name     String
   address  String
   imageUrl String
-  Service  Service[]
-  Booking  Booking[]
+  services  Service[]
+  bookings  Booking[]
 }
 
 //UM SERVICO VAI PERTENCER A UMA BARBEARIA
@@ -40,7 +40,7 @@ model Service {
   barbershop   Barbershop @relation(fields: [barbershopId], references: [id])
   imageUrl     String
   description  String
-  Booking      Booking[]
+  bookings     Booking[]
 }
 
 // VAI PERTENCER A UM USER, UM SERVICO E UMA BARBEARIA
