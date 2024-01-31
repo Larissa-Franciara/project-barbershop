@@ -9,6 +9,7 @@ import BarbershopItem from './_components/barbershop-item';
 
 export default async function Home() {
   const barbershop = await db.barbershop.findMany({});
+  
   return (
     <div>
       <Header />
