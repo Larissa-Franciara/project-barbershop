@@ -1,22 +1,29 @@
 "use client";
 
+import SideMenu from "@/app/_components/side-menu";
 import { Button } from "@/app/_components/ui/button";
+import {  Sheet, SheetContent, SheetTrigger } from "@/app/_components/ui/sheet";
 import { Barbershop } from "@prisma/client";
-import { ChevronLeftIcon, MapPinIcon, MenuIcon, StarIcon } from "lucide-react";
+import {
+  ChevronLeftIcon,
+  MapPinIcon,
+  MenuIcon,
+  StarIcon,
+} from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 interface BarbershopInfoProps {
-    barbershop: Barbershop
+  barbershop: Barbershop;
 }
-const BarbershoInfo = ({barbershop}: BarbershopInfoProps) => {
-    const router = useRouter();
+const BarbershoInfo = ({ barbershop }: BarbershopInfoProps) => {
+  const router = useRouter();
 
-    const handleBoonkingClick = () => {
-        router.back();
-    }
-    return ( 
-        <div>
+  const handleBoonkingClick = () => {
+    router.back();
+  };
+  return (
+    <div>
       <div className="h-[250px] w-full relative">
         <Button
           onClick={handleBoonkingClick}
@@ -27,13 +34,21 @@ const BarbershoInfo = ({barbershop}: BarbershopInfoProps) => {
           <ChevronLeftIcon size={16} />
         </Button>
 
-        <Button
-          variant={"outline"}
-          size={"icon"}
-          className="absolute top-4 right-3 z-50"
-        >
-          <MenuIcon size={16} />
-        </Button>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button
+              variant={"outline"}
+              size={"icon"}
+              className="absolute top-4 right-3 z-50"
+            >
+              <MenuIcon size={16} />
+            </Button>
+          </SheetTrigger>
+
+          <SheetContent className="p-0">
+            <SideMenu />
+          </SheetContent>
+        </Sheet>
 
         <Image
           alt={barbershop.name}
@@ -58,7 +73,7 @@ const BarbershoInfo = ({barbershop}: BarbershopInfoProps) => {
         </div>
       </div>
     </div>
-     );
-}
- 
+  );
+};
+
 export default BarbershoInfo;
