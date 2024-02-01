@@ -10,17 +10,18 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/app/_components/ui/sheet";
-import { Barbershop, Service } from "@prisma/client";
+import { Barbershop, Booking, Service } from "@prisma/client";
 import { ptBR } from "date-fns/locale";
 import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { generateDayTimeList } from "../../_helpers/hours";
 import { format, setHours, setMinutes } from "date-fns";
 import { saveBooking } from "../_actions/save-booking";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { getDayBookings } from "../_actions/get-day-bookings";
 
 interface ServiceItemProps {
   service: Service;
@@ -33,7 +34,11 @@ const formatCurrency = (value: number) => {
     currency: "BRL",
   }).format(value);
 };
-const ServiceItem = ({ service, barbershop, isAunthenticated }: ServiceItemProps) => {
+const ServiceItem = ({
+  service,
+  barbershop,
+  isAunthenticated,
+}: ServiceItemProps) => {
   const { data } = useSession();
   const router = useRouter();
   const handleBoonkingClick = () => {
@@ -45,10 +50,37 @@ const ServiceItem = ({ service, barbershop, isAunthenticated }: ServiceItemProps
   const [hour, setHour] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(false);
   const [sheetIsOpen, setSheetIsOpen] = useState(false);
+  const [dayBooking, setDayBooking] = useState<Booking[]>([]);
+
+
+  useEffect(() => {
+    if (!date) return;
+    const refreshTimeList = async () => {
+      const _dayBookings = await getDayBookings(date);
+      setDayBooking(_dayBookings);
+    };
+
+    refreshTimeList();
+  }, [date]);
 
   const timeList = useMemo(() => {
-    return date ? generateDayTimeList(date) : [];
-  }, [date]);
+    if(!date) return [];
+    return generateDayTimeList(date).filter(time => {
+      const timeHour = Number(time.split(":")[0]);
+      const TimeMin = Number(time.split(":")[1]);
+
+       const booking = dayBooking.find(booking => {
+        const bookingHour = booking.date.getHours();
+        const bookingMin = booking.date.getMinutes();
+
+        return bookingHour === timeHour && bookingMin === TimeMin;
+       })
+       
+       if(!booking) return true;
+
+       return false;
+    });
+  }, [date, dayBooking]);
 
   const handleDateClick = (date: Date | undefined) => {
     setDate(date);
@@ -78,16 +110,16 @@ const ServiceItem = ({ service, barbershop, isAunthenticated }: ServiceItemProps
       setSheetIsOpen(false);
       setHour(undefined);
       setDate(undefined);
-      toast("Agendamento realizado com sucesso!", { 
+      toast("Agendamento realizado com sucesso!", {
         description: format(newDate, "'Para' dd 'de' MMMM 'às' HH':'mm'.'", {
           locale: ptBR,
-          }),
+        }),
         action: {
           label: "Visualizar",
           onClick: () => {
-            router.push("/bookings")
+            router.push("/bookings");
           },
-        }
+        },
       });
     } catch (error) {
       console.log(error);
@@ -126,7 +158,13 @@ const ServiceItem = ({ service, barbershop, isAunthenticated }: ServiceItemProps
                 </SheetTrigger>
                 <SheetContent className="p-0">
                   <SheetHeader className="text-left px-5 py-6 border-b border-solid border-primary">
-                    <SheetTitle> <p className="text-xs text-primary">Olá, {data?.user?.name}</p>  Faça seu agendamento</SheetTitle>
+                    <SheetTitle>
+                      {" "}
+                      <p className="text-xs text-primary">
+                        Olá, {data?.user?.name}
+                      </p>{" "}
+                      Faça seu agendamento
+                    </SheetTitle>
                   </SheetHeader>
 
                   <Calendar
@@ -192,24 +230,27 @@ const ServiceItem = ({ service, barbershop, isAunthenticated }: ServiceItemProps
                         )}
                         {hour && (
                           <div className="flex justify-between">
-                          <p className="text-gray-400 text-sm">Horário</p>
-                          <p className="text-sm">
-                            {hour}
-                          </p>
-                        </div>
+                            <p className="text-gray-400 text-sm">Horário</p>
+                            <p className="text-sm">{hour}</p>
+                          </div>
                         )}
                         <div className="flex justify-between">
-                        <p className="text-gray-400 text-sm">Barbearia</p>
-                        <p className="text-sm">{barbershop.name}</p>
+                          <p className="text-gray-400 text-sm">Barbearia</p>
+                          <p className="text-sm">{barbershop.name}</p>
                         </div>
                       </CardContent>
                     </Card>
                   </div>
                   <SheetFooter className="px-5">
-                      <Button disabled={!date || !hour || isLoading} onClick={handleBoonkigSubmit}> 
-                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Confirmar agendamento
-                      </Button>
+                    <Button
+                      disabled={!date || !hour || isLoading}
+                      onClick={handleBoonkigSubmit}
+                    >
+                      {isLoading && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Confirmar agendamento
+                    </Button>
                   </SheetFooter>
                 </SheetContent>
               </Sheet>
