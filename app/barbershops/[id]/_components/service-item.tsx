@@ -12,11 +12,15 @@ import {
 } from "@/app/_components/ui/sheet";
 import { Barbershop, Service } from "@prisma/client";
 import { ptBR } from "date-fns/locale";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import { generateDayTimeList } from "../../_helpers/hours";
-import { format } from "date-fns";
+import { format, setHours, setMinutes } from "date-fns";
+import { saveBooking } from "../_actions/save-booking";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { useRouter } from "next/router";
 
 interface ServiceItemProps {
   service: Service;
@@ -30,6 +34,8 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 const ServiceItem = ({ service, barbershop, isAunthenticated }: ServiceItemProps) => {
+  const { data } = useSession();
+  const router = useRouter();
   const handleBoonkingClick = () => {
     if (!isAunthenticated) {
       return signIn("google");
@@ -37,6 +43,8 @@ const ServiceItem = ({ service, barbershop, isAunthenticated }: ServiceItemProps
   };
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [hour, setHour] = useState<string | undefined>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [sheetIsOpen, setSheetIsOpen] = useState(false);
 
   const timeList = useMemo(() => {
     return date ? generateDayTimeList(date) : [];
@@ -48,6 +56,44 @@ const ServiceItem = ({ service, barbershop, isAunthenticated }: ServiceItemProps
   };
   const handleHourClick = (time: string) => {
     setHour(time);
+  };
+
+  const handleBoonkigSubmit = async () => {
+    setIsLoading(true);
+    try {
+      if (!date || !hour || !data?.user) return;
+
+      const dateHour = Number(hour.split(":")[0]);
+      const dateMin = Number(hour.split(":")[1]);
+
+      const newDate = setMinutes(setHours(date, dateHour), dateMin);
+
+      await saveBooking({
+        barbershopId: barbershop.id,
+        date: newDate,
+        serviceId: service.id,
+        userId: (data.user as any).id,
+      });
+
+      setSheetIsOpen(false);
+      setHour(undefined);
+      setDate(undefined);
+      toast("Agendamento realizado com sucesso!", { 
+        description: format(newDate, "'Para' dd 'de' MMMM 'às' HH':'mm'.'", {
+          locale: ptBR,
+          }),
+        action: {
+          label: "Visualizar",
+          onClick: () => {
+            router.push("/bookings")
+          },
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -72,7 +118,7 @@ const ServiceItem = ({ service, barbershop, isAunthenticated }: ServiceItemProps
               <p className="text-primary text-sm font-bold">
                 {formatCurrency(Number(service.price))}
               </p>
-              <Sheet>
+              <Sheet open={sheetIsOpen} onOpenChange={setSheetIsOpen}>
                 <SheetTrigger asChild>
                   <Button variant="secondary" onClick={handleBoonkingClick}>
                     Agendar
@@ -80,7 +126,7 @@ const ServiceItem = ({ service, barbershop, isAunthenticated }: ServiceItemProps
                 </SheetTrigger>
                 <SheetContent className="p-0">
                   <SheetHeader className="text-left px-5 py-6 border-b border-solid border-primary">
-                    <SheetTitle>Fazer agendamento</SheetTitle>
+                    <SheetTitle> <p className="text-xs text-primary">Olá, {data?.user?.name}</p>  Faça seu agendamento</SheetTitle>
                   </SheetHeader>
 
                   <Calendar
@@ -160,7 +206,10 @@ const ServiceItem = ({ service, barbershop, isAunthenticated }: ServiceItemProps
                     </Card>
                   </div>
                   <SheetFooter className="px-5">
-                      <Button disabled={!date || !hour}> Confirmar agendamento</Button>
+                      <Button disabled={!date || !hour || isLoading} onClick={handleBoonkigSubmit}> 
+                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Confirmar agendamento
+                      </Button>
                   </SheetFooter>
                 </SheetContent>
               </Sheet>
