@@ -56,12 +56,12 @@ const ServiceItem = ({
   useEffect(() => {
     if (!date) return;
     const refreshTimeList = async () => {
-      const _dayBookings = await getDayBookings(date);
+      const _dayBookings = await getDayBookings(barbershop.id, date);
       setDayBooking(_dayBookings);
     };
 
     refreshTimeList();
-  }, [date]);
+  }, [date,  barbershop.id]);
 
   const timeList = useMemo(() => {
     if(!date) return [];
