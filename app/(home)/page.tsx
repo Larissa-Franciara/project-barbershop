@@ -35,7 +35,11 @@ export default async function Home() {
       <Header />
 
       <div className="px-5 pt-5">
-        <h2 className="text-xl font-bold">{session?.user ? `Olá ${session.user.name?.split(" ")[0]}!` : 'Olá, visitante!'}</h2>
+        <h2 className="text-xl font-bold">
+          {session?.user
+            ? `Olá ${session.user.name?.split(" ")[0]}!`
+            : "Olá, visitante!"}
+        </h2>
         <p className="capitalize text-sm">
           {format(new Date(), "EEEE',' dd 'de' MMMM", {
             locale: ptBR,
@@ -68,7 +72,9 @@ export default async function Home() {
         </h2>
         <div className="flex gap-3 overflow-x-auto [&::-webkit-scrollbar]:hidden">
           {barbershop.map((barbershop) => (
-            <BarbershopItem key={barbershop.id} barbershop={barbershop} />
+            <div key={barbershop.id} className="min-w-[200px] max-w-[200px]">
+              <BarbershopItem key={barbershop.id} barbershop={barbershop} />
+            </div>
           ))}
         </div>
       </div>
@@ -79,7 +85,9 @@ export default async function Home() {
 
         <div className="flex px-5 gap-4 overflow-x-auto [&::-webkit-scrollbar]:hidden">
           {barbershop.map((barbershop) => (
-            <BarbershopItem key={barbershop.id} barbershop={barbershop} />
+            <div key={barbershop.id} className="min-w-[200px] max-w-[200px]">
+              <BarbershopItem key={barbershop.id} barbershop={barbershop} />
+            </div>
           ))}
         </div>
       </div>
