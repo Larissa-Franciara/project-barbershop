@@ -195,20 +195,23 @@ const ServiceItem = ({
                     }}
                   />
                   {date && (
-                    <div className="flex gap-4  px-5 py-6 border-t border-solid border-secondary overflow-auto [&::-webkit-scrollbar]:hidden">
-                      {timeList.map((time) => (
-                        <Button
-                          variant={hour === time ? "default" : "outline"}
-                          className="mt-3 hover:bg-primary rounded-full"
-                          key={time}
-                          onClick={() => handleHourClick(time)}
-                        >
-                          {time}
-                        </Button>
-                      ))}
+                    <div className="flex gap-4 px-5 py-6 border-t border-solid border-secondary overflow-auto [&::-webkit-scrollbar]:hidden">
+                      {timeList.length === 0 ? (
+                        <p className="text-xs text-gray-400">Todos os horários para este dia estão esgotados.</p>
+                      ) : (
+                        timeList.map((time) => (
+                          <Button
+                            variant={hour === time ? "default" : "outline"}
+                            className="mt-3 hover:bg-primary rounded-full"
+                            key={time}
+                            onClick={() => handleHourClick(time)}
+                          >
+                            {time}
+                          </Button>
+                        ))
+                      )}
                     </div>
                   )}
-
                   <div className="py-6 px-5 border-t border-solid border-primary">
                     <Card>
                       <CardContent className="p-3 flex flex-col gap-4">

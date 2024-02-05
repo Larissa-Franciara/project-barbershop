@@ -92,7 +92,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
               <p className="text-2xl ">
                 {format(booking?.date, "dd", { locale: ptBR })}
               </p>
-              <p className="text-sm">{format(booking?.date, "hh:mm")}</p>
+              <p className="text-sm">{format(booking?.date, "HH:mm")}</p>
             </div>
           </CardContent>
         </Card>
@@ -160,7 +160,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
 
               <div className="flex justify-between">
                 <h3 className="text-gray-400 text-sm">Horário</h3>
-                <h4 className="text-sm">{format(booking.date, "hh:mm")}</h4>
+                <h4 className="text-sm">{format(booking.date, "HH:mm")}</h4>
               </div>
 
               <div className="flex justify-between">
